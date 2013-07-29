@@ -1,0 +1,16 @@
+Package: ScanStats
+Type: Package
+Title: XDATA-JHU  package for Scan statistics on Time Series of Graphs
+Author: Youngser Park <youngser@jhu.edu>, Sancar Adali <sadali1@jhu.edu>
+Maintainer: Youngser Park <youngser@jhu.edu>
+Depends: R (>= 2.10),igraph, reshape2, animation, gridExtra, ggplot2, MCMCpack,
+        mclust, Matrix, irlba, plyr, maps, R.utils, cluster, mapproj,
+        R.utils, chron,ff(>= 2.2.11), ffbase(>= 0.9), bit(>= 1.1-9), lubridate
+Description: See 'helloworld' for a quick demo, and 'demo1' & 'demo2' for step by step details. You can run the demos using demo(helloworld),demo(demo1),...
+License: GPL (>=3)
+LazyLoad: yes
+Version: 0.4.0
+Date: 2013-07-27
+Collate: 'loaddata.r' 'localscan.r' 'themeclean.r' 'zzz.R' 'BitCoin-preprocess.R' 'TSG2ScanStats.R' 'demos.R' 'Akamai-preprocess.R' 'preprocess.R'
+VignetteBuilder: knitr
+Packaged: 2013-06-13 14:06:33 UTC; parky

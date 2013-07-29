@@ -1,0 +1,4 @@
+demo1    Demo for XDATA inference in CharityNet via graph embedding.
+demo2    Demo for XDATA Time Series of Graphs anomaly detection in CharityNet via scan statistics.
+helloworld   Quick demo for XDATA with preloaded objects
+BitCoin_scan_stats     Running Scan Statistics on Bitcoin dataset
