@@ -101,7 +101,7 @@ EmbedGraphCore <-function(V.list.by.Ecount.ffdf
 
 
 Embed.OOS.chunk <- function (chunk.i, complete_edgelist,
-                             core.v.chunk, Embedded.coords,scaling=FALSE) {
+                             core.v.chunk, Embedded.coords,scaling=TRUE) {
   
   
   v.chunk.size <- length(chunk.i)

@@ -2,22 +2,24 @@
 #' and returns  a list of igraph objects (or NULL) based on a time series of graphs view of the data
 #' Filters the data to include only  hops  from vantage points in the vector vant.pt.of.interest and the first `n.hops` hops
 #' @param ntimebins number of igraph objects (number of timesteps in TSG)
-#' @param vant.pt.of.interest an  integer vector whose elements are   id numbers for the vantage points of interest
-#' @param n.hops
+#' @param vant.pt.of.interest  an  integer  which is the   id number for the vantage point of interest
+#' @param n.hops use only the first n.hops for each traceroute
 #' @param csv.dir if NULL, searches the current directory for csv.gz files, otherwise  calls setwd(csv.dir)
 #' @return a list of igraph objects (or NULL) based on a time series of graphs view of the data
 #'  @export           
-tracerouteToigraphList<- function(ntimebins,
-                             vant.pt.of.interest
-                             ,n.hops ,csv.dir=NULL
-                                  , split.timespan=FALSE){
+tracerouteToigraphList <- function(ntimebins,
+                                   vant.pt.of.interest
+                                   ,n.hops ,csv.dir=NULL
+                                   , split.timespan=FALSE
+                                   , aggreg.by.region=FALSE){
   require(lubridate)
   
   TSG<-list()
   if (!is.null(csv.dir)) setwd(csv.dir)
   edgelist.df.and.times <- tracerouteToEdgelist(
     vant.pt=vant.pt.of.interest,n.first.hops=n.hops
-    ,csv.dir=csv.dir,ret.uniq.times=TRUE)
+    ,csv.dir=NULL,ret.uniq.times=TRUE
+    , aggreg.by.region=aggreg.by.region)
   edgelist.df<- edgelist.df.and.times$el
   time.pts <- edgelist.df.and.times$time.pts
   time.pts.lubridate<- origin+time.pts
@@ -46,20 +48,31 @@ tracerouteToigraphList<- function(ntimebins,
       TSG.igraph <-NULL
       if (length(edgelist.df.time.int)>0) {
         try ( 
-          TSG.igraph<- graph.data.frame(as.data.frame(
-            edgelist.df[edgelist.df.time.int,],directed=TRUE))
-        )
+          final.edgelist <- 
+            edgelist.df[edgelist.df.time.int,-1])
+        
+        if (aggreg.by.region){
+          is.long.delay<- final.edgelist$delay>30 
+        }
+        final.edgelist <- as.data.frame(final.edgelist)
+        final.edgelist <-cbind(final.edgelist,is.long.delay)
+        
+        
+        TSG.igraph<- graph.data.frame(final.edgelist,directed=TRUE))
+)
       }
-      TSG<-c(TSG,list(TSG.igraph))      
+TSG<-c(TSG,list(TSG.igraph))      
     }
   }
+
+return(TSG)
 }
 
 #' Reads all the traceroute  files where each row is one hop (in csv.gz) in a directory 
 #' and turns  a list of igraph objects (or NULL) based on a time series of graphs view of the data
 #' Filters the data to include only  hops  from vantage points in the vector vant.pt.of.interest and the first `n.first.hops` hops
 #' @param ntimebins number of igraph objects (number of timesteps in TSG)
-#' @param vant.pt an  integer vector whose elements are   id numbers for the vantage points of interest
+#' @param vant.pt an  integer  which is the   id number for the vantage point of interest
 #' @param n.first.hops
 #' @param csv.dir if NULL, searches the current directory for csv.gz files, otherwise  calls setwd(csv.dir)
 #' @param  ret.uniq.times if TRUE, the function returns a vector of integers representing the unique time steps (in unix time format) in the data.frame 
@@ -77,8 +90,11 @@ tracerouteToigraphList<- function(ntimebins,
 #'                lat: numeric 
 #'                lon: numeric
 #' @export
-tracerouteToEdgelist<- function(vant.pt=4149,n.first.hops=8,csv.dir=NULL,
-                               ret.uniq.times=TRUE){
+tracerouteToEdgelist<- function(vant.pt=4149, n.first.hops=8
+                                ,csv.dir=NULL
+                                , ret.uniq.times=TRUE
+                                ,return.cols = c("traceNum","IP" ,"time","delay")
+                                ,aggreg.by.region=FALSE){
   TSG <- list()
   if (!is.null(csv.dir)) setwd(csv.dir)
   fnames<-Sys.glob("*.csv.gz")
@@ -86,25 +102,27 @@ tracerouteToEdgelist<- function(vant.pt=4149,n.first.hops=8,csv.dir=NULL,
   line.count<-10000
   time.pt.list <- c()
   for (filename in fnames) { # For each csv.gz file 
+    
     file.conn <- gzfile(description=filename,open="r")
+    print(paste("processing file ",filename))
     # read.chunk <- "a"
     continue.file.read <-TRUE
     line.ptr<-0           
     remains.of.prev.traceroute <-    data.frame(
-      traceNum = integer(0) ,    vp     = integer(0)
-      ,  time   = integer(0) ,    hop    = integer(0)
-      ,  delay  = numeric(0) ,    IP     = character(0)
+      traceNum = integer(0)  , vp     = integer(0)
+      ,  time   = integer(0)    , hop    = integer(0)
+      ,  delay  = numeric(0)    , IP     = character(0)
       ,  country = character(0) , AS     = character(0)
       ,  lat  = numeric(0)      , lon    = numeric(0)
     )
     
-    while (continue.file.read){
+    while (continue.file.read) {
       # runtime.chunk<- system.time({
       data.frame.read <- read.csv(file.conn, nrows=line.count
                                   , col.names = c(
-                                    "traceNum", "vp","time","hop"
-                                    , "delay", "IP"  , "country"
-                                    , "AS" , "lat", "lon" )
+                                    "traceNum", "vp" ,  "time" , "hop"
+                                    , "delay",  "IP"  , "country"
+                                    , "AS" ,    "lat",  "lon" )
                                   
                                   ,colClasses=
                                     c("integer","integer","integer"
@@ -118,29 +136,47 @@ tracerouteToEdgelist<- function(vant.pt=4149,n.first.hops=8,csv.dir=NULL,
         time.pt.list<- union(time.pt.list
                              , unique(data.frame.read$time))
       }
-        
+      
       if (nrow(data.frame.read)==0) 
         continue.file.read<-FALSE
-      data.frame.read <- rbind(remains.of.prev.traceroute
-                               ,data.frame.read)
+      data.frame.read <- rbind(  remains.of.prev.traceroute
+                                 , data.frame.read)
+      last.line <- nrow(data.frame.read)
       #find beginning of last traceroute in read chunk
-      line.ptr <- tail(which(data.frame.read$hop==0),1)
-      remains.of.prev.traceroute <- data.frame.read[line.ptr:line.count,]
+      line.ptr <- tail( which(data.frame.read$hop==0),1)
+      remains.of.prev.traceroute <- data.frame.read[line.ptr: last.line,]
       #remove the possible portion of traceroute
-      data.frame.read<- data.frame.read[-(line.ptr:line.count),]
+      data.frame.read<- data.frame.read[-(line.ptr: last.line),]
+      
+      data.frame.read$IP[data.frame.read$IP=="0.0.0.0"] <- NA
+      
+      df.rows <- nrow(data.frame.read)
+      
+      region.vec <- data.frame.read$country
+      us.r.vec   <- region.vec=="US"
+      us.r.vec[is.na(us.r.vec)] <- FALSE
+      region.vec[us.r.vec] <- ifelse (data.frame.read$lon[us.r.vec]< -105,"WUS","EUS")
       
       #filter to get only the first n.first.hops and 
       #only those vantage point
       filter.row.var <-   (data.frame.read$hop>0  &
                              data.frame.read$hop <= n.first.hops) &
         (data.frame.read$vp %in% vant.pt)
-      filter.col.var <- c(1,6,3,5) # traceNum, IP, time, delay
       
-      data.frame.read <- data.frame.read[filter.row.var,][,filter.col.var]
+      filter.col.var <- return.cols # traceNum, IP, time, delay
       
-      edgelist.with.attribs <- ddply(.data=data.frame.read
+      data.frame.read.filt <- data.frame.read[filter.row.var,][,filter.col.var]
+      region.vec <- region.vec[filter.row.var]
+      
+      if (aggreg.by.region) {
+        data.frame.read.filt <- cbind(data.frame.read.filt,region.vec)
+      }
+      
+      
+      edgelist.with.attribs <- ddply(.data=data.frame.read.filt
                                      ,  .variables="traceNum"
-                                     ,  .fun=hopsToEdges,vant.pt)
+                                     ,  .fun=hopsToEdges
+                                     , vant.pt, aggreg.by.region)
       #} ) #end of system.tim
       #ffdf.read <- ffdfappend (ffdf.read, data.frame.read)
       if (nrow(edgelist.with.attribs)>0){
@@ -148,6 +184,7 @@ tracerouteToEdgelist<- function(vant.pt=4149,n.first.hops=8,csv.dir=NULL,
                                           , edgelist.with.attribs )
       }
     }
+    print(paste("processed file ",filename))
   }
   
   if (ret.uniq.times) {
@@ -157,22 +194,44 @@ tracerouteToEdgelist<- function(vant.pt=4149,n.first.hops=8,csv.dir=NULL,
   }
 }
 
-
-hopsToEdges <- function(hoplist,vant.pt){
+#' List of hops (each row is an IP) to edgelist (each row is an edge from one IP to another)
+#' @param hoplist data.frame of hops
+#' @param vant.pt ID number of vantage point hops originated from (also, the from vertex id in the first row of edgelist )
+#' @return a data.frame that is an edgelist:has the vertices from and to  and time and delay attributes for each edge
+#' @export
+hopsToEdges <- function(hoplist,vant.pt ,aggreg.by.region=FALSE){
   num.hops<- nrow(hoplist)
   num.edges <- (num.hops)
   #num.attribs <- 2  #ncol(hoplist) - 2
-  edge.list <- data.frame(v1=rep(NA,num.edges),
-                          v2=rep(NA,num.edges),
-                          time=rep("",num.edges),
+  edge.list <- data.frame(v1=rep("",num.edges),
+                          v2=rep("",num.edges),
+                          time=rep(NA,num.edges),
                           delay= rep(NA,num.edges))
-  edge.list[,2:4] <- hoplist[,2:4]
-  if (num.hops==1) edge.list[1,1]<- vant.pt
-  else{
-    edge.list[,1]<- c(vant.pt,hoplist[1:(num.edges-1),2])
+  if (!aggreg.by.region){
+    edge.list[,2:4] <- hoplist[,2:4]
+    if (num.hops==1) edge.list[1,1]<- as.character(vant.pt)
+    else{
+      edge.list[,1]<- c(as.character(vant.pt),hoplist[1:(num.edges-1),2])
+    }
+  } else{
+    edge.list[,3:4] <- hoplist[,3:4]
+    edge.list[,2] <- hoplist[,5]
+    if (num.hops==1) { 
+      edge.list[1,1]<- "VAPT"
+    } else{
+      edge.list[,1]<- c("VAPT"
+                        ,as.character(hoplist[1:(num.edges-1),5]))
+    }
+    
   }
-  
   return(edge.list)
+}
+
+
+traceroutesbyCC<- function(vant.pt){
+  tracerouteToEdgelist ()
   
 }
+
+
 
