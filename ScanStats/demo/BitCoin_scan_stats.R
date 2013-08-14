@@ -1,13 +1,17 @@
 #rawdata <- read.delim("./data/JHU_sample_ 2013-06-18 .tsv", stringsAsFactors = FALSE )
 #rawdata <- read.delim("./data/JHU_sample_11June2013.tsv", stringsAsFactors = FALSE )
+library(ScanStats)
 rawdata<- data(bitcoin)
 
 if (!exists("rawdata")) {
-  bitcoinfile <- "./inst/extdata/bitcoin/bitcoin-20130410.tsv"
+  
+  bitcoinfile <-   system.file("extdata","bitcoin-sample.tsv", package="ScanStats")
+  
   if (!file.exists(bitcoinfile))
     stop("First, load data into `rawdata` variable ")
-  rawdata<-filterBitcoin(bitcoinfile.tsv=bitcoin)
+  rawdata <-filterBitcoin (bitcoinfile.tsv=bitcoinfile)
 }
+
 if (!exists("numt")) numt <-36
 if (!exists("numt")) eq.time.int <- TRUE
 #source("./R/preprocess.R")

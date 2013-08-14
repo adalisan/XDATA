@@ -3,7 +3,10 @@
 #preprocess Bitcoin dataset
 
 
-
+#' loads the Bitcoin transaction data as a ffdf object
+#' @param csvfile name of the csv file of bitcoin transaction data
+#' @export
+#'
 LoadBitCoinData <- function(csvfile) { 
   if(exists("bc.ffdf")) 
     return(bc.ffdf)
@@ -20,6 +23,12 @@ LoadBitCoinData <- function(csvfile) {
   return(bc.ffdf)
 }
 
+
+#' Returns  a unique list of values in a ff_vector sorted in decreasing order
+#' according to counts of values
+#' @param col.ff the ff_vector whose unique vals are returned
+#' @export
+#'
 BinColumn <- function(col.ff) {
   
   keys <- !duplicated(col.ff)
@@ -86,8 +95,12 @@ BinColumn <- function(col.ff) {
 
 
 
-processBitcoin<- function(rawdata){
-  require(lubridate)
+#' Utility function that names the bitcoin data read into R
+#' and format the transaction date column
+#' @param rawdata the data as a data frame
+#' @export
+#'
+processBitcoin<- function(rawdata){  
   names(rawdata)<-c("trans_id", "from","to","time","amount")
   rawdata$time <- ymd_hms(rawdata$time)
   return(rawdata)

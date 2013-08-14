@@ -1,30 +1,14 @@
-require(igraph)
-require(ff)
-require(ffbase)
-require(plyr)
-require(mclust)
-require(bit)
 
 run.in.linux <- (.Platform$OS.type == "unix") 
 debug.mode <- TRUE  
   
-if(!exists("kiva.bbn.data.loc")) {
-  print("please define kiva.bbn.data.loc , assuming kiva data lies in ")
-  kiva.bbn.data.loc<-(file.path(Sys.getenv("PROJECT_DIR"),"XDATA","jhuxdata","data","kiva","kiva_bbn"))
-  print(kiva.bbn.data.loc)
-}
+kiva.data.loc <-   system.file("inst","extdata", package="AdjMatEmbed")
+  #kiva.data.loc <-   system.file("extdata", package="AdjMatEmbed")
+print(kiva.data.loc)
 
-
-
-kiva.lender_country <- load.kiva.lender_country(kiva.bbn.data.loc)
-kiva.lender_lender.edgelist <- load.kiva.bbn(kiva.bbn.data.loc)
-
-
-names(kiva.lender_lender.edgelist)<-c("v1","v2")
-#count the number of edges incident to each vertex
 
 graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
-                               , v.chunk.size = 2000) {
+                               ,core.v.chunk.size=2000, v.chunk.size = core.v.chunk.size, save.ffdata=TRUE ) {
   
  
   
@@ -32,26 +16,26 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
   V.Ecount.ffdf <- OrderVByEcount(kiva.lender_lender.edgelist)
   
   
- 
+  v.chunk.size <- min(dim(V.Ecount.ffdf)[1]- core.v.chunk.size,v.chunk.size)
   
-  core.v.chunk <-  V.Ecount.ffdf[[1]][1:v.chunk.size]
+  core.v.chunk <-  V.Ecount.ffdf[[1]][1:core.v.chunk.size]
   
   lender.embed.core<- EmbedGraphCore(V.Ecount.ffdf
                                      , kiva.lender_lender.edgelist
                                      , core.v.chunk
-                                     , v.chunk.size=v.chunk.size
+                                     , v.chunk.size=core.v.chunk.size
                                      , embed.dim=embed.dim)
   
   
   
-  mclust.model<-Mclust(lender.embed.core)
+ # mclust.model<-Mclust(lender.embed.core)
   
-  print(mclust.model)
+#  print(mclust.model)
   
   #plot(mclust.model)
   #converting to ff vector with the right dimension ordering (2,1)
   lender.embed.core.ff <-as.ffdf( as.ff(lender.embed.core,
-                                        dim=c(v.chunk.size,embed.dim),dimorder=c(2,1)))
+                                        dim=c(core.v.chunk.size,embed.dim),dimorder=c(2,1)))
   
   rownames(lender.embed.core.ff) <- (core.v.chunk)
   
@@ -72,8 +56,12 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
   embed.coords.periph <- NULL
   
   num.periph.vec <- length(ff_periph_v_vector)
-  
+  chunk.ri <- NULL
+  if (v.chunk.size < num.periph.vec )
   chunk.ri<- chunk(ff_periph_v_vector,by=v.chunk.size)
+  else{
+    chunk.ri<- chunk(ff_periph_v_vector)
+  }
   for (i in chunk.ri){
   
     chunk.i <- ff_periph_v_vector [i]
@@ -104,7 +92,7 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
   embed.coords.periph.ffdf <- ffdf( v.name=ff_periph_v_vector ,x=embed.coords.periph)
   
   
-  ffsave.image("lender.embed.ff")
+  if (save.ffdata) ffsave.image("lender.embed.ff")
   
   
   
@@ -116,16 +104,38 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
 }
 
 
-lender.embed.dim.3<- graphEmbedCluster (kiva.lender_lender.edgelist
-                                                    ,embed.dim=3 , v.chunk.size = 10000)
-lender.embed.dim.10<- graphEmbedCluster  (kiva.lender_lender.edgelist
-                                                     , embed.dim=10, v.chunk.size = 10000)  
   
-  lender.embed.dim.35<- graphEmbedCluster (kiva.lender_lender.edgelist
-                                                       ,embed.dim = 35
-                                                       , v.chunk.size = 10000)  
+
+
+kiva.lender_lender.edgelist <- load.kiva( kiva.data.loc)
+
+
+names(kiva.lender_lender.edgelist)<-c("v1","v2")
+#count the number of edges incident to each vertex
+
+
+# lender.embed.dim.3<- graphEmbedCluster (kiva.lender_lender.edgelist
+#                                                     ,embed.dim=3 , v.chunk.size = 3000)
+lender.embed.dim.10<- graphEmbedCluster  (kiva.lender_lender.edgelist
+                                                     , embed.dim=10
+                                          , core.v.chunk.size = 2000
+                                          ,v.chunk.size=Inf)  
+  
+#   lender.embed.dim.35<- graphEmbedCluster (kiva.lender_lender.edgelist
+#                                                        ,embed.dim = 35
+#                                                        , v.chunk.size = 3000)  
     
 
+lender.embed.core<- cbind(data.frame(v.name=rownames(lender.embed.dim.10$core)),as.data.frame(lender.embed.dim.10$core))
+
+
+
+
+lender.embed.all<- ffdfappend(lender.embed.dim.10$periph,lender.embed.core)
+
+ord <- fforder(lender.embed.all$v.name, decreasing=FALSE)
+lender.embed.all <- lender.embed.all[ord,]
+rownames(lender.embed.all ) <- lender.embed.all$v.name
   
   
   

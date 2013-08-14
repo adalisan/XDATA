@@ -86,30 +86,6 @@ load.kiva.lenders <- function(sample.data=FALSE){
   num.of.real.loaners<- sum.ff(real.loaners)
 }
 
-load.kiva.bbn <- function(kiva.file.loc){
-  
-  kiva.lender_lender.file <- file.path(kiva.file.loc,"lender_lender_loan.tsv")
-  kiva.lender_lender.edgelist<-read.delim.ffdf(file=kiva.lender_lender.file
-                                               ,header=FALSE, quote="", sep="\t", na.strings=c(""), fill=TRUE,
-                                               colClasses = c("integer"
-                                                              ,"integer")
-  )
-  return(kiva.lender_lender.edgelist)                                    
-}
-
-load.kiva.bbn.lender.partner <- function(kiva.file.loc){
-  kiva.lender_partner.file <- file.path(kiva.file.loc
-                                        ,"lender_partner_by_loan.tsv")
-  
-  kiva.lender_partner.edgelist<-read.delim.ffdf(file=kiva.lender_partner.file
-                                                , header=FALSE, quote="", sep="\t"
-                                                , na.strings=c(""), fill=TRUE,
-                                                colClasses = c("integer"
-                                                               ,"integer")
-  )
-  return(kiva.lender_partner.edgelist)                                    
-  
-}
 
 load.kiva.bbn.partner.loan <- function(kiva.file.loc){
   kiva.partner_loan.file <- file.path(kiva.file.loc
@@ -124,28 +100,6 @@ load.kiva.bbn.partner.loan <- function(kiva.file.loc){
   return(kiva.partner_loan.edgelist)                                    
   
 }
-
-
-load.kiva.bbn.all.table <- function(kiva.file.loc) {
-  
-  kiva.all_table.file <- file.path(kiva.file.loc
-                                   ,"loan_lender_borrower_partner.tsv")
-  
-  kiva.all_table <- read.delim.ffdf(file = kiva.all_table.file
-                                    , header=FALSE, quote="", sep="\t"
-                                    , na.strings=c(""), fill=TRUE,
-                                    colClasses = c("integer"
-                                                   ,"integer"
-                                                   ,"integer"
-                                                   ,"integer")
-  )
-  return (kiva.all_table)                                    
-  
-  
-}
-
-
-
 
 
 BinColumn <- function(col.ff) {

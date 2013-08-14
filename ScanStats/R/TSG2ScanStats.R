@@ -278,8 +278,6 @@ vertex.depend.normalize.stats <- function(stats.list, tau=0, us.T.them.F=TRUE,
 					} else {
 						#we can use the already computed local scan statistics.
 						
-						#ifelse might also work here, without needing outer
-						#print(v.name)
 						num.v<- length(v.name)
 
 						phi_tau <- vapply( (t.i-(1:tau)), function(tau.i,st.list,v.n) {
@@ -307,7 +305,7 @@ vertex.depend.normalize.stats <- function(stats.list, tau=0, us.T.them.F=TRUE,
 						names(mean_phi_tau)<- v.name
 						sd_phi_tau = apply(phi_tau,1,sd)
 						#print(sd_phi_tau)
-            #use H&Y's replacement vals for stdev
+            #use replacement vals for stdev
 					  sd_phi_tau[sd_phi_tau<1] <- 1
 						names(sd_phi_tau)<- v.name
 						
@@ -354,7 +352,7 @@ normalize_verts.at.T.with_tau <- function (stats_at.T,
 	
 	verts_at.T <- names(stats_at.T )
 
-	verts_at.T[is.na(verts_at.T)]<-"0.0.0.0"    
+	verts_at.T[is.na(verts_at.T)]<-"NoName"    
 	
 	stats_at.T <- lapply(verts_at.T, function(v,st_at.T,mean_recent_phi_tau,sd_recent_phi_tau) {
 				#print(str(v))
@@ -415,6 +413,12 @@ temporal.normalize.stats <- function(max.stats.list,el) {
 }
 
 
+#'Writes the us and them statistics to a csv file along with the timesteps
+#'@param fname Name of the filename
+#'@param stats.us list of  scan statistics whose names correspond
+#'@param stats.them
+#'@param ts.breaks
+#'@export
  write.stats.to.csv<-function(fname,stats.us, stats.them, ts.breaks){
    numt <- length(ts.breaks)-1
    argmax.v.us <- names(stats.us)
@@ -430,7 +434,9 @@ temporal.normalize.stats <- function(max.stats.list,el) {
 
 
 
-#Rearrange raw stats in list of named vector format(lnv) to matrix/ multidimensional array format (Youngser)
+#'Rearrange raw stats in list of named vector format(lnv) to matrix/ multidimensional array format 
+#'@param raw.scanstats list of named vectors that stores the statistics
+#'@export
 lnv.to.mdim_array <- function (raw.scanstats) {
   vlist<-c()
   for (i in 1:length(raw.scanstats)){

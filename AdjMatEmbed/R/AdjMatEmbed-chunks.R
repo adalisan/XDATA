@@ -74,6 +74,8 @@ EmbedGraphCore <-function(V.list.by.Ecount.ffdf
   adj.mat<- get.adjacency(kiva_Graph_lender_lender)
   adj.mat.norm<-adj.mat
   
+  print(max(adj.mat.norm))
+  
 #   epsilon <-0.05
 #   if (!unique.edge.list){
 #    adj.mat.norm <-      adj.mat.norm/max(adj.mat.norm)
@@ -90,16 +92,27 @@ EmbedGraphCore <-function(V.list.by.Ecount.ffdf
 #     print("iter.count  for adj.mat.norm", iter.count)
 #     adj.mat.norm <- (t(adj.mat.norm)+adj.mat.norm)/2
 #   }
-   
+  Embedded.coords <- NULL
+  if (!unique.edge.list){
+    Embedded.coords <- tsne(adj.mat.norm,k=embed.dim)
+  }  else{
   
   Embedded.coords <-  inverse.rdpg(A=adj.mat.norm,dim=embed.dim,scaling=scaling)
+  }
   rownames(Embedded.coords)<- as.character(core.v.chunk)
   return(Embedded.coords)
 }
 
 
 
-
+#' Embeds  a portion of  the  out-of-sample vertices of the graph by OOS extension for Adj Spectral Embedding
+#' @param  chunk.i 
+#' @param complete_edgelist the list of edges as an ffdf object that has two columns, v1 and v2
+#' @param core.v.chunk names of vertices in the in-sample group
+#' @param  Embedded.coords the in-sample embedding of the in-sample group of vertices
+#' @param scaling  if FALSE,  the embeddings will be on the unit hypersphere
+#' @return a Matrix object (length(chunk.i) x embed.dim) that contains the embedding coordinates of the OOS vertices
+#' @export
 Embed.OOS.chunk <- function (chunk.i, complete_edgelist,
                              core.v.chunk, Embedded.coords,scaling=TRUE) {
   
@@ -166,7 +179,12 @@ Embed.OOS.chunk <- function (chunk.i, complete_edgelist,
 
 
 
-
+#' Embeds  the  out-of-sample vertices of the graph by OOS extension for Adj Spectral Embedding
+#' @param  X.is the in-sample embedding coordinaates
+#' @param Atable.edgelist an edgelist where the first vertex if an in-sample vertex
+#' and the second vertices
+#' @return a Matrix object (length(unique( uniq.edgelist[,2])) x dim(X.is)[2]) that contains the embedding coordinates of the OOS vertices
+#' @export
 EmbedOOS <- function (X.is, Atable.edgelist ){
   
   
@@ -184,7 +202,7 @@ EmbedOOS <- function (X.is, Atable.edgelist ){
   A.table <- A.test [v.is.names ,v.oos.names]
   
   
-  Embedded.coords.oos <-inverse.rdpg.oos(A=X.is,
+  Embedded.coords.oos <- inverse.rdpg.oos(A=X.is,
                                          Anew=A.table,
                                          dim=dim)
   

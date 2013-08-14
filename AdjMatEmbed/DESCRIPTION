@@ -5,7 +5,7 @@ Date: 2013-07-18
 Author: Sancar Adali  <sadali1@jhu.edu>
 Maintainer: Sancar Adali  <sadali1@jhu.edu>
 Description: R package for Adjacency Spectral Embedding (in-sample and out-of-sample)
-Depends:    R (>= 2.14.0), igraph, reshape2, animation, gridExtra, ggplot2, MCMCpack, mclust, Matrix, irlba, plyr, maps, R.utils, cluster, mapproj, R.utils, chron, ff(>= 2.2.11), ffbase(>= 0.9), bit(>= 1.1-9), lubridate
+Depends:    R (>= 2.14.0), igraph, reshape2, animation, gridExtra, ggplot2, MCMCpack, mclust, Matrix, irlba, plyr, maps, R.utils, cluster, mapproj, R.utils, chron, ff(>= 2.2.11), ffbase(>= 0.9), bit(>= 1.1-9), lubridate,tsne
 Suggests:  ScanStats        
 License: GPL (>=3)
 LazyLoad: yes
