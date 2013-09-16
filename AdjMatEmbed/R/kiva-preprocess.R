@@ -5,6 +5,13 @@
 load.kiva.lender.lender  <- function(kiva.file.loc,lender_lender_fname="lender_lender_loan.tsv"){
   
   kiva.lender_lender.file <- paste(kiva.file.loc,"/" ,lender_lender_fname,sep="")
+  if (!file.exists(kiva.lender_lender.file)) {
+    
+    kiva.data.loc <-   system.file("extdata", package="AdjMatEmbed")
+    kiva.lender_lender.file <- paste(kiva.file.loc,"/" ,"lender_lender_loan_sample.tsv",sep="")
+    
+  }
+    
   kiva.lender_lender.edgelist<-read.delim.ffdf(file=kiva.lender_lender.file
                                                ,header=FALSE, quote="", sep="\t", na.strings=c(""), fill=TRUE,
                                                colClasses = c("integer"
@@ -20,6 +27,14 @@ load.kiva.lender.lender  <- function(kiva.file.loc,lender_lender_fname="lender_l
 load.kiva.lender.partner <- function(kiva.file.loc,lender_partner_fname="/lender_partner_by_loan.tsv"){
   kiva.lender_partner.file <- file.path(kiva.file.loc
                                         ,lender_partner_fname)
+  
+  
+  if (!file.exists(kiva.lender_partner.file)) {
+    
+    kiva.file.loc <-   system.file("extdata", package="AdjMatEmbed")
+    kiva.lender_partner.file <- paste(kiva.file.loc,"/" ,"lender_partner_by_loan_sample.tsv",sep="")    
+  }
+
   
   kiva.lender_partner.edgelist<-read.delim.ffdf(file=kiva.lender_partner.file
                                                 , header=FALSE, quote="", sep="\t"
@@ -37,6 +52,15 @@ load.kiva.all.table <- function(kiva.file.loc
   
   kiva.all_table.file <- file.path(kiva.file.loc
                                    ,"/loan_lender_borrower_partner.tsv")
+  
+  if (!file.exists(kiva.all_table.file)) {
+    
+    kiva.file.loc <-   system.file("extdata", package="AdjMatEmbed")
+    kiva.all_table.file <- paste(kiva.file.loc,"/" ,"loan_lender_borrower_partner_sample.tsv",sep="") 
+  }
+    
+  
+  
   
   kiva.all_table <- read.delim.ffdf(file = kiva.all_table.file
                                     , header=FALSE, quote="", sep="\t"
@@ -70,7 +94,7 @@ pruneTeamList <- function(team.file){
   
 }
 
-
+#' Creates the reassignment of Kiva members  to teams after the pruning of teams using pruneTeam
 correctedTeamLinks <- function(team.file, teamLenderLink.file,lender_user_id_map.file){
   team.map <- pruneTeamList(team.file)
   

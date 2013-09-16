@@ -182,7 +182,7 @@ Embed.OOS.chunk <- function (chunk.i, complete_edgelist,
 #' Embeds  the  out-of-sample vertices of the graph by OOS extension for Adj Spectral Embedding
 #' @param  X.is the in-sample embedding coordinaates
 #' @param Atable.edgelist an edgelist where the first vertex if an in-sample vertex
-#' and the second vertices
+#' and the second  vertex is an OOS vertex
 #' @return a Matrix object (length(unique( uniq.edgelist[,2])) x dim(X.is)[2]) that contains the embedding coordinates of the OOS vertices
 #' @export
 EmbedOOS <- function (X.is, Atable.edgelist ){
@@ -190,12 +190,21 @@ EmbedOOS <- function (X.is, Atable.edgelist ){
   
   uniq.edgelist<- unique( Atable.edgelist)
   v.is.names <- rownames(X.is)
+  v.is.names <- paste("is.",v.is.names,sep="")
   v.oos.names <- as.character( unique( uniq.edgelist[,2]))
-  
+  v.oos.names <- paste("oos.",v.oos.names,sep="")
   dim <- dim(X.is)[2]
+  bip.graph <- graph.empty()+vertices(v.is.names) +vertices(v.oos.names)
   
-  bip.graph <- graph.edgelist(matrix(uniq.edgelist,ncol=2),directed=FALSE)
-  
+  chunk.range.indices<- chunk(uniq.edgelist)
+  for (range.index in chunk.range.indices){
+    edgelist.mat<- as.matrix(uniq.edgelist[range.index,])
+    not.among.embedded <- !(as.character(edgelist.mat[,1]) %in% rownames(X.is))
+    edgelist.mat <- edgelist.mat[!not.among.embedded,]
+    edge.vec<- as.vector(t(edgelist.mat))
+    edge.vec<-paste(c("is.","oos."),edge.vec,sep="")
+  bip.graph <- bip.graph + edges(edge.vec,directed=FALSE)
+  }
   
   
   A.test  <- get.adjacency(bip.graph)

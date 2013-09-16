@@ -1,4 +1,4 @@
-#' AdjMatEmbed
+#' AdjMatEmbed:  R  package forAdjacency Matrix Spectral Embedding with out-of-sample extension for embedding graphs
 #'
 #' @name AdjMatEmbed
 #' @docType package
