@@ -2,8 +2,8 @@
 run.in.linux <- (.Platform$OS.type == "unix") 
 debug.mode <- TRUE  
   
-kiva.data.loc <-   system.file("inst","extdata", package="AdjMatEmbed")
-  #kiva.data.loc <-   system.file("extdata", package="AdjMatEmbed")
+#kiva.data.loc <-   system.file("inst","extdata", package="AdjMatEmbed")
+  kiva.data.loc <-   system.file("extdata", package="AdjMatEmbed")
 print(kiva.data.loc)
 
 
@@ -105,9 +105,12 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
 
 
   
-
-
-kiva.lender_lender.edgelist <- load.kiva.lender.lender ( kiva.data.loc)
+subsample.data<- TRUE
+if (subsample.data){
+  kiva.lender_lender.edgelist <- load.kiva.lender.lender ( kiva.data.loc)
+} else {
+  kiva.lender_lender.edgelist <- load.kiva.lender.lender ( kiva.data.loc)
+}
 
 
 names(kiva.lender_lender.edgelist)<-c("v1","v2")
