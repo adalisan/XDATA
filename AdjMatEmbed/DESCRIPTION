@@ -9,5 +9,5 @@ Depends:    R (>= 2.14.0), igraph, reshape2, animation, gridExtra, ggplot2, MCMC
 Suggests:  ScanStats        
 License: GPL (>=3)
 LazyLoad: yes
-Collate: 'AdjMatEmbed-package.r' 'AdjMatEmbed-chunks.R' 'loaddata.r' 'buildGj.r' 'buildGtable.r' 'buildTSG.r' 'cossim.r' 'dem 'getElbows.R' 'getSamples.r'      'plotmap.r' 'stfp.R'       'themeclean.r' 'onload.R' 'preprocess.R' 'demos.R'  'kiva-preprocess.R'  
+Collate: 'AdjMatEmbed-package.r' 'AdjMatEmbed-chunks.R' 'loaddata.r' 'buildGj.r' 'buildGtable.r' 'buildTSG.r' 'cossim.r'  'getElbows.R' 'getSamples.r'      'plotmap.r' 'stfp.R'       'themeclean.r'  'preprocess.R' 'demos.R'  'kiva-preprocess.R'  
 VignetteBuilder: knitr
