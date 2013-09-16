@@ -107,7 +107,7 @@ graphEmbedCluster <- function (kiva.lender_lender.edgelist,embed.dim=10
   
 
 
-kiva.lender_lender.edgelist <- load.kiva( kiva.data.loc)
+kiva.lender_lender.edgelist <- load.kiva.lender.lender ( kiva.data.loc)
 
 
 names(kiva.lender_lender.edgelist)<-c("v1","v2")
